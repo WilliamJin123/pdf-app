@@ -55,10 +55,14 @@ export default function Upload() {
         }
         try {
             const formData = new FormData()
+            
             formData.append('title', form.title)
             formData.append('author', form.author)
             formData.append('description', form.description)
             formData.append('pages', form.pages)
+            formData.append('file', form.file)
+            console.log(form.file)
+            
             const res = await fetch('http://localhost:5000/upload', {
                 method: 'POST',
                 body: formData,

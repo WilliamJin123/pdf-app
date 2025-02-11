@@ -27,6 +27,7 @@ export async function addFile(client, form, collection) {
         author: form.author,
         description: form.description,
         pages: form.pages,
+        key: form.key,
         dateAdded: new Date()
     }
 

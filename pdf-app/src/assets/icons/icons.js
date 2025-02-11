@@ -10,6 +10,9 @@ import zip from './filetypes/zip.png';
 import plain from './filetypes/txt.png';
 import raw from './filetypes/raw.png';
 import file from './filetypes/file.png'
+import x from './close.png'
+import checkmark from './checkmark.png'
+
 
 export default {
     uploadpng,
@@ -22,5 +25,7 @@ export default {
     zip,
     plain,
     raw,
-    file
+    file,
+    x,
+    checkmark
 }

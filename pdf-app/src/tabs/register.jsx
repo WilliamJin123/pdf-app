@@ -71,7 +71,7 @@ export default function Register() {
                             onChange={p => setForm({ ...form, confirmPassword: p.target.value })}
                         />
                     </div>
-                    <div className="w-[90%] mx-[5%] mb-6">
+                    <div className="w-[90%] mx-[5%] mb-5">
                         <label htmlFor="showPassword" className="text-sm text-gray-500">Show Password</label>
                         <input
                             type="checkbox"
@@ -82,14 +82,13 @@ export default function Register() {
                         />
                     </div>
 
-
                     <button
                         type="submit"
                         className="w-[50%] mx-[25%] py-2 bg-blue-600 text-white rounded-md "
                     >  Register
                     </button>
 
-                    <div className="flex w-full mt-10">
+                    <div className="flex w-full mt-4">
                         <Link to="/sign-in" className="w-full text-center text-blue-600 underline">Already have an account?</Link>
                     </div>
                 </form>
