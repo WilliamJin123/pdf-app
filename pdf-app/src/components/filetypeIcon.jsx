@@ -7,16 +7,8 @@ FileIcon.PropTypes = {
 }
 
 export default function FileIcon({ imageStyles, fileType }) {
-
-    console.log(fileType)
-
     const fileExtension = fileType.split('/').pop().toLowerCase();
-
-    console.log(fileExtension)
-
-
-
-    const imgSrc = icons[fileExtension] || icons.none;
+    const imgSrc = icons[fileExtension] || icons.file;
 
     
     return (

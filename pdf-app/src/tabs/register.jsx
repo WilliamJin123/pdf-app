@@ -72,7 +72,7 @@ export default function Register() {
                         />
                     </div>
                     <div className="w-[90%] mx-[5%] mb-6">
-                        <label htmlFor="showPassword" className="text-sm">Show Password</label>
+                        <label htmlFor="showPassword" className="text-sm text-gray-500">Show Password</label>
                         <input
                             type="checkbox"
                             id="showPassword"

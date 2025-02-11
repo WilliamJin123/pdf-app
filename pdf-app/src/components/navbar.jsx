@@ -40,7 +40,7 @@ export default function Navbar() {
                             variants={enterVariants}
                         >
                             <div><Link to="/" className={isActive("/") ? "text-yellow-500" : "text-white"}>Home </Link></div>
-                            <div><Link to="/sign-in" className={isActive("/sign-in") ? "text-yellow-500" : "text-white"}>Sign In</Link></div>
+                            <div><Link to="/sign-in" className={`${isActive("/sign-in") ? "text-yellow-500" : "text-white"}`}>Sign In</Link></div>
                             <div><Link to="/register" className={isActive("/register") ? "text-yellow-500" : "text-white"}>Register </Link></div>
                             <div><Link to="/profile" className={isActive("/profile") ? "text-yellow-500" : "text-white"}>Profile</Link></div>
                             <div><Link to="/upload" className={isActive("/upload") ? "text-yellow-500" : "text-white"}>Upload</Link></div>

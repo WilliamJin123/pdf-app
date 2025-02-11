@@ -4,7 +4,7 @@ import html from './filetypes/html.png';
 import jpg from './filetypes/jpg.png';
 import png from './filetypes/png.png';
 import pdf from './filetypes/pdf.png';
-import word from './filetypes/doc.png';
+import doc from './filetypes/doc.png';
 import xlsx from './filetypes/xls.png';
 import zip from './filetypes/zip.png';
 import plain from './filetypes/txt.png';
@@ -17,7 +17,7 @@ export default {
     jpg,
     png,
     pdf,
-    word,
+    doc,
     xlsx,
     zip,
     plain,

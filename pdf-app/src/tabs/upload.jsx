@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef } from "react"
 import icons from '../assets/icons/icons'
 import FileIcon from "../components/filetypeIcon";
+import { PDFDocument } from 'pdf-lib';
 
 export default function Upload() {
     const savedTitle = localStorage.getItem("title");
     const savedDescription = localStorage.getItem("description");
     const savedAuthor = localStorage.getItem("author");
+    const savedPages = localStorage.getItem("pages")
     const [uploading, setUploading] = useState(false)
 
     const [form, setForm] = useState({
         title: savedTitle || "",
         author: savedAuthor || "",
         description: savedDescription || "",
+        pages: savedPages || 0,
         file: null
     })
 
@@ -19,23 +22,87 @@ export default function Upload() {
         localStorage.removeItem("title")
         localStorage.removeItem("description")
         localStorage.removeItem("author")
+        localStorage.removeItem("pages")
+        console.log('cleared form')
+        setForm({
+            title: "",
+            author: "",
+            description: "",
+            pages: 0,
+            file: null
+        })
     }
 
-    const handleSubmit = (e) => {
-        setUploading(true)
-        console.log('submitted upload')
+    const handleSubmit = async (e) => {
         e.preventDefault()
+        setUploading(true)
+        if (!form.file) {
+            console.log('need file')
+            return
+        }
+        if (!form.title) {
+            console.log('need title')
+            return
+        }
+        try {
+            const formData = new FormData()
+            formData.append('title', form.title)
+            formData.append('author', form.author)
+            formData.append('description', form.description)
+            formData.append('pages', form.pages)
+            const res = await fetch('http://localhost:5000/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await res.json();
+            if (res.ok) {
+                console.log(result.message);
+            } else {
+                console.log(result.message, result.error);
+            }
 
-    }
+        } catch (error) {
+            console.log('Error uploading file:', error);
+        } finally {
 
-    const handleFileChange = (e) => {
-        if (e.target.files) {
-            setForm({ ...form, file: e.target.files[0] })
+            setUploading(false);
+
         }
     }
 
-    useEffect(() => { console.log(form) 
-        if(form.type) console.log('filetype', form.file.type)
+    const handleFileChange = async (e) => {
+
+        const getPageCount = async (file) => {
+            if (!file) return
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer);
+            return pdfDoc.getPages().length
+        }
+
+        if (e.target.files) {
+            if (e.target.files[0].type.includes('pdf')) {
+
+                try {
+                    const pageCount = await getPageCount(e.target.files[0])
+                    localStorage.setItem("pages", pageCount)
+                    setForm(prevForm => ({
+                        ...prevForm,
+                        file: e.target.files[0],
+                        pages: pageCount
+                    }));
+                } catch (err) {
+                    console.log(err)
+                }
+
+            } else {
+                console.log('not a pdf, try again')
+            }
+        }
+    }
+
+    useEffect(() => {
+        console.log(form)
+        if (form.type) console.log('filetype', form.file.type)
     }, [form])
 
     return (
@@ -75,7 +142,7 @@ export default function Upload() {
                         />
                     </div>
                     <div className="w-[94%] mx-[3%] poppins-regular mb-7">
-                        <label htmlFor="title" className="text-sm">Book Title:</label>
+                        <label htmlFor="title" className="text-sm">Book Description:</label>
                         <textarea
                             type="text"
                             id="description"
@@ -104,11 +171,11 @@ export default function Upload() {
 
                                     </div>)}
                             </label>
-                            <input id="file" name="file" type="file" className="hidden" onChange={handleFileChange} />
+                            <input id="file" name="file" type="file" accept="file" className="hidden" onChange={handleFileChange} />
                         </div>
                         <div className="w-[40%] h-[100%] flex flex-col justify-evenly items-center">
-                            <button type="submit" disabled={uploading}  className={`poppins-mediu text-white ${uploading? 'bg-gray-500' : 'bg-black ' } rounded-xl w-[60%] h-12`}>Upload</button>
-                            <button onClick={clearForm} className={`poppins-medium text-white bg-black rounded-xl w-[60%] h-12`}>Cancel</button>
+                            <button type="submit" disabled={uploading} className={`poppins-mediu text-white ${uploading ? 'bg-gray-500' : 'bg-black '} rounded-xl w-[60%] h-12`}>Upload</button>
+                            <button type="button" onClick={clearForm} className={`poppins-medium text-white bg-black rounded-xl w-[60%] h-12`}>Cancel</button>
                         </div>
                     </div>
                 </form>
