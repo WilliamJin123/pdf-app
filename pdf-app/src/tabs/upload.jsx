@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import icons from '../assets/icons/icons'
 import FileIcon from "../components/filetypeIcon";
 import { PDFDocument } from 'pdf-lib';
@@ -36,12 +36,21 @@ export default function Upload() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setUploading(true)
+        let valid = true;
         if (!form.file) {
             console.log('need file')
-            return
+            valid = false;
         }
         if (!form.title) {
             console.log('need title')
+            valid = false;
+        }
+        if (!form.author) {
+            console.log('need author')
+            valid = false;
+        }
+        if (!valid) {
+            setUploading(false);
             return
         }
         try {
@@ -73,13 +82,11 @@ export default function Upload() {
     const handleFileChange = async (e) => {
 
         const getPageCount = async (file) => {
-            if (!file) return
             const arrayBuffer = await file.arrayBuffer();
             const pdfDoc = await PDFDocument.load(arrayBuffer);
             return pdfDoc.getPages().length
         }
-
-        if (e.target.files) {
+        if (e.target.files && e.target.files[0]) {
             if (e.target.files[0].type.includes('pdf')) {
 
                 try {
@@ -97,6 +104,9 @@ export default function Upload() {
             } else {
                 console.log('not a pdf, try again')
             }
+        } else {
+            setForm(prevForm => ({ ...prevForm, pages: 0, file: null }))
+
         }
     }
 
@@ -174,7 +184,7 @@ export default function Upload() {
                             <input id="file" name="file" type="file" accept="file" className="hidden" onChange={handleFileChange} />
                         </div>
                         <div className="w-[40%] h-[100%] flex flex-col justify-evenly items-center">
-                            <button type="submit" disabled={uploading} className={`poppins-mediu text-white ${uploading ? 'bg-gray-500' : 'bg-black '} rounded-xl w-[60%] h-12`}>Upload</button>
+                            <button type="submit" disabled={uploading} className={`poppins-medium text-white ${uploading ? 'bg-gray-500' : 'bg-black '} rounded-xl w-[60%] h-12`}>Upload</button>
                             <button type="button" onClick={clearForm} className={`poppins-medium text-white bg-black rounded-xl w-[60%] h-12`}>Cancel</button>
                         </div>
                     </div>

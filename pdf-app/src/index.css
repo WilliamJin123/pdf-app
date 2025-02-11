@@ -10,6 +10,7 @@
 @theme {
   --gray: #4B5267;
   --cream: #FFFDF0;
+  --strong-cream: #fef5c5;
 }
 
 body{
@@ -19,15 +20,17 @@ body{
 }
 button{
   border-width: 1.5px;
+  border-color: currentColor;
 }
 
 button:hover, a:hover{
   cursor:pointer;
 
-}
-button:hover{
-  border-color: #aaa;
   
+}
+button:hover, button:focus{
+  box-shadow: 0 0 30px var(--strong-cream);
+  filter: brightness(1.1);
 }
 
 

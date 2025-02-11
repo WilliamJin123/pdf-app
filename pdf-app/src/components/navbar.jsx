@@ -51,13 +51,13 @@ export default function Navbar() {
                     )}
                 </AnimatePresence>
 
-                <motion.button className='right-[8%] h-8 absolute bg-black w-15 top-15 rounded-b-2xl flex justify-center items-center ' onClick={() => setExpanded(!expanded)}
+                <motion.div className='right-[10%] h-8 absolute bg-black w-15 top-15 rounded-b-2xl flex justify-center items-center outline-none shadow-none ' onClick={() => setExpanded(!expanded)}
                     animate = {{y: expanded? 0: -60 }}
                     transition={{ duration: 0.2}}
                     >
-                    <motion.span className='flex justify-center items-center transform origin-center w-full h-full' 
+                    <motion.span className='flex justify-center items-center transform origin-center w-full h-auto py-0' 
                     initial={{rotate:'-90deg'}}animate={{ rotate: expanded ? '-90deg' : '90deg' }} transition={{ duration: 0.2}}>{expandSvg()}</motion.span>
-                </motion.button>
+                </motion.div>
             </div>
 
         </Suspense>

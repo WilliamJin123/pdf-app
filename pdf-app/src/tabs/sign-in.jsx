@@ -66,7 +66,7 @@ export default function SignIn() {
                     </button>
 
                     <div className="flex w-full mt-10">
-                        <Link to="/register" className="w-full text-center text-blue-600 underline"><a>Don't have an account?</a></Link>
+                        <Link to="/register" className="w-full text-center text-blue-600 underline">Don't have an account?</Link>
                     </div>
                 </form>
 

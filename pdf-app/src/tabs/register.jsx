@@ -90,7 +90,7 @@ export default function Register() {
                     </button>
 
                     <div className="flex w-full mt-10">
-                        <Link to="/sign-in" className="w-full text-center text-blue-600 underline"><a>Already have an account?</a></Link>
+                        <Link to="/sign-in" className="w-full text-center text-blue-600 underline">Already have an account?</Link>
                     </div>
                 </form>
 
