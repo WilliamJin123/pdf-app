@@ -9,16 +9,16 @@
  */
 
 const hasValidHeader = (request, env) => {
-	return request.headers.get("X-Custom-Auth-Key") === env.AUTH_KEY_SECRET;
+	return request.headers.get("X-Custom-Auth-Key") === env['AUTH-KEY-SECRET'];
 };
 
 function authorizeRequest(request, env, key) {
 	switch (request.method) {
 		case "PUT":
 		case "DELETE":
-			return hasValidHeader(request, env);
 		case "GET":
-			return ALLOW_LIST.includes(key);
+			return hasValidHeader(request, env);
+
 		default:
 			return false;
 	}
@@ -28,20 +28,39 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 		const key = url.pathname.slice(1);
-
+		// console.log(env['AUTH-KEY-SECRET'])
+		// console.log(request.headers.get("X-Custom-Auth-Key"));
+		console.log(request.method)
 		if (!authorizeRequest(request, env, key)) {
 			return new Response("Forbidden", { status: 403 });
 		}
 		if (request.method === "PUT") {
 			try {
-				const fileBuffer = await request.ArrayBuffer();
+				const fileBuffer = await request.arrayBuffer();
 				await env.MY_BUCKET.put(key, fileBuffer, {
-					httpMetadata: { contentType: "application/pdf" },
+					httpMetadata: {
+						contentType: "application/pdf",
+					},
+
 				})
 				return new Response(`File ${key} uploaded successfully`, { status: 200 });
 			} catch (err) {
-				return new Response(`Upload error: ${error.message}`, { status: 500 });
+				return new Response(`Upload error: ${err.message}`, { status: 500 });
 			}
+		} else if (request.method === "GET") {
+			try {
+				const file = await env.MY_BUCKET.get(key)
+				return file ? new Response(file, { status: 200 }) : new Response("File not found", { status: 404 });
+			} catch (err) {
+				return new Response(`Fetch file error: ${err.message}`, { status: 500 });
+			}
+		} else {
+			return new Response("Method Not Allowed", {
+				status: 405,
+				headers: {
+					Allow: "PUT, GET, DELETE",
+				},
+			});
 		}
 	},
 };

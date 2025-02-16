@@ -61,7 +61,6 @@ export default function Upload() {
             formData.append('description', form.description)
             formData.append('pages', form.pages)
             formData.append('file', form.file)
-            console.log(form.file)
             
             const res = await fetch('http://localhost:5000/upload', {
                 method: 'POST',
@@ -71,7 +70,7 @@ export default function Upload() {
             if (res.ok) {
                 console.log(result.message);
             } else {
-                console.log(result.message, result.error);
+                console.log(result.message + '\n', result.error);
             }
 
         } catch (error) {
@@ -171,7 +170,7 @@ export default function Upload() {
                         />
 
                     </div>
-                    <div className="text-sm w-[94%] ml-[3%] poppins-regular mb-3">Upload File:</div>
+                    <div className="text-sm w-[94%] ml-[3%] poppins-regular mb-3">Upload File (.pdf):</div>
                     <div className="flex w-[94%] mx-[3%] h-[25vh] justify-evenly items-center">
 
                         <div className="w-[60%] h-[100%] flex items-center justify-center rounded-xl border border-black ">

@@ -12,7 +12,7 @@ import raw from './filetypes/raw.png';
 import file from './filetypes/file.png'
 import x from './close.png'
 import checkmark from './checkmark.png'
-
+import search from './search.png'
 
 export default {
     uploadpng,
@@ -27,5 +27,6 @@ export default {
     raw,
     file,
     x,
-    checkmark
+    checkmark,
+    search
 }

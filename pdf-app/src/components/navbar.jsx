@@ -51,7 +51,7 @@ export default function Navbar() {
                     )}
                 </AnimatePresence>
 
-                <motion.div className='right-[10%] h-8 absolute bg-black w-15 top-15 rounded-b-2xl flex justify-center items-center outline-none shadow-none ' onClick={() => setExpanded(!expanded)}
+                <motion.div className=' cursor-pointer right-[10%] h-8 absolute bg-black w-15 top-15 rounded-b-2xl flex justify-center items-center outline-none shadow-none ' onClick={() => setExpanded(!expanded)}
                     animate = {{y: expanded? 0: -60 }}
                     transition={{ duration: 0.2}}
                     >
