@@ -16,9 +16,9 @@ function authorizeRequest(request, env, key) {
 	switch (request.method) {
 		case "PUT":
 		case "DELETE":
-		case "GET":
 			return hasValidHeader(request, env);
-
+		case "GET":
+			return true
 		default:
 			return false;
 	}
@@ -28,9 +28,6 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 		const key = url.pathname.slice(1);
-		// console.log(env['AUTH-KEY-SECRET'])
-		// console.log(request.headers.get("X-Custom-Auth-Key"));
-		console.log(request.method)
 		if (!authorizeRequest(request, env, key)) {
 			return new Response("Forbidden", { status: 403 });
 		}
@@ -47,10 +44,19 @@ export default {
 			} catch (err) {
 				return new Response(`Upload error: ${err.message}`, { status: 500 });
 			}
-		} else if (request.method === "GET") {
+		}
+		if (request.method === "GET") {
 			try {
 				const file = await env.MY_BUCKET.get(key)
-				return file ? new Response(file, { status: 200 }) : new Response("File not found", { status: 404 });
+				if(!file){
+					new Response("File not found", { status: 404 });
+				}
+				return new Response(file.body, {
+					status: 200,
+					headers: {
+						"Content-Type": file.httpMetadata.contentType || "application/octet-stream",
+					},
+				});
 			} catch (err) {
 				return new Response(`Fetch file error: ${err.message}`, { status: 500 });
 			}
@@ -58,7 +64,7 @@ export default {
 			return new Response("Method Not Allowed", {
 				status: 405,
 				headers: {
-					Allow: "PUT, GET, DELETE",
+					Allow: "PUT, GET, DELETE"
 				},
 			});
 		}

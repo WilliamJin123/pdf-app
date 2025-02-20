@@ -6,7 +6,7 @@ import cors from "cors";
 import multer from "multer";
 import { configDotenv } from "dotenv";
 import { v4 as uuidv4 } from 'uuid'
-import { TaskQueuePC} from "./taskqueue-consumer-producer.mjs";
+import { TaskQueuePC } from "./taskqueue-consumer-producer.mjs";
 import bucket from "./pdf-worker/src/bucket.mjs";
 
 configDotenv({ path: './config.env' })
@@ -39,6 +39,7 @@ function parseForm(req) {
 
 const bucketServer = 'https://pdf-worker.jinwilliam-jin.workers.dev'
 
+const localBucketServer = 'http://127.0.0.1:8787'
 
 const server = http.createServer(async (req, res) => {
 
@@ -46,54 +47,56 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'POST' && req.url === '/upload') {
-
-        try {
-            const form = await parseForm(req)
-            const { fields, file } = form
-            if (!fields.title || !fields.author || !fields.description || !fields.pages) {
-                res.writeHead(400, { 'Content-Type': 'application/json' })
-                res.end(JSON.stringify({ message: 'Missing required fields' }))
-                return
-            }
-            const uniqueId = uuidv4()
-            //add file to bucket
-            // console.log('name', file.name)
-
-
-            const response = await fetch(`${bucketServer}/${uniqueId}`, {
-                method: 'PUT',
-                body: file.buffer,
-                headers: {
-                    'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET,
-                    'fileName': file.name
+        const putFilesInBucket = async () => {
+            try {
+                const form = await parseForm(req)
+                const { fields, file } = form
+                if (!fields.title || !fields.author || !fields.description || !fields.pages) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' })
+                    res.end(JSON.stringify({ message: 'Missing required fields' }))
+                    return
                 }
-            })
-            if (!response.ok) {
-                throw new Error(`Failed to upload file, status: ${response.status}`);
+                const uniqueId = uuidv4()
+                //add file to bucket
+                // console.log('name', file.name)
+
+
+                const response = await fetch(`${bucketServer}/${uniqueId}`, {
+                    method: 'PUT',
+                    body: file.buffer,
+                    headers: {
+                        'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET,
+                        'fileName': file.name
+                    }
+                })
+                if (!response.ok) {
+                    throw new Error(`Failed to upload file, status: ${response.status}`);
+                }
+
+
+                const writeData = {
+                    id: uniqueId,
+                    title: fields.title,
+                    author: fields.author,
+                    description: fields.description,
+                    pages: parseInt(fields.pages, 10),
+                    fileName: file.name
+                }
+
+
+
+                await connectDb(async (client) => {
+                    await addFile(client, writeData, 'Files')
+                })
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ message: "Metadata stored successfully" }));
+
+            } catch (error) {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ message: "Error saving metadata", error: error.message }));
             }
-
-
-            const writeData = {
-                id: uniqueId,
-                title: fields.title,
-                author: fields.author,
-                description: fields.description,
-                pages: parseInt(fields.pages, 10),
-                fileName: file.name
-            }
-
-
-
-            await connectDb(async (client) => {
-                await addFile(client, writeData, 'Files')
-            })
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "Metadata stored successfully" }));
-
-        } catch (error) {
-            res.writeHead(500, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "Error saving metadata", error: error.message }));
         }
+        putFilesInBucket()
 
     } else if (req.method === 'GET' && req.url.includes('/search')) {
         const queryString = req.url.split('?')[1]
@@ -108,30 +111,48 @@ const server = http.createServer(async (req, res) => {
                 const result = await searchFiles(client, title, author, offset, limit, 'Files')
                 return result
             })
-            console.log('fetch res', result)
+            console.log('data entries to be fetched', result)
             //implement a task queue to fetch files from bucket for each item in result
+            let completedFetches = 0
             const getFilesFromBucket = async () => {
                 const taskQ = new TaskQueuePC(3)
                 for (let i = 0; i < result.length; i++) {
                     taskQ.runTask(async () => {
-                            console.log('fetching file', result[i].id)
-                            const bucketFile = await fetch(`${bucketServer}/${result[i].id}`, {
+                        const index = i
+                        try {
+                            
+                            console.log('fetching file', result[index].id)
+                            const bucketFile = await fetch(`${bucketServer}/${result[index].id}`, {
                                 method: 'GET',
                                 headers: {
-                                    'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET
+                                    'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET,
+
                                 }
                             })
-                            if(!bucketFile.ok){
-                                console.log(await bucketFile.text(), bucketFile.status) 
-                            }
-                            console.log('bucket', bucketFile)
+                            console.log(bucketFile)
+                            const fileArrayBuffer = await bucketFile.arrayBuffer()
+                            result[index].file = fileArrayBuffer
                             
+                        } catch (err) {
+                            console.log(err) //no throw because want succesful searches to go through regardless of failed fetches
+                        }finally{
+                            return index
+                        }
+
+                    }).then((index) => {
+                        console.log('file fetched', result[index].id, result[index].file)
+                        completedFetches++
                     })
                 }
             }
             getFilesFromBucket()
 
-
+            while (completedFetches < result?.length) {
+                await new Promise((resolve) => setTimeout(resolve, 200))
+            }
+            console.log('finished all fetches!')
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(result))
         } catch (err) {
             res.writeHead(500, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "Error searching", error: err.message }));
