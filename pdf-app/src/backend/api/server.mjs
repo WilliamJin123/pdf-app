@@ -7,7 +7,9 @@ import multer from "multer";
 import { configDotenv } from "dotenv";
 import { v4 as uuidv4 } from 'uuid'
 import { TaskQueuePC } from "./taskqueue-consumer-producer.mjs";
-import bucket from "./pdf-worker/src/bucket.mjs";
+import bucket from "../pdf-worker/src/bucket.mjs";
+import { generateThumbnail } from "./thumbnail.mjs";
+
 
 configDotenv({ path: './config.env' })
 
@@ -56,26 +58,42 @@ const server = http.createServer(async (req, res) => {
                     res.end(JSON.stringify({ message: 'Missing required fields' }))
                     return
                 }
-                const uniqueId = uuidv4()
+                const fileId = uuidv4()
+                const thumbnailId = uuidv4()
                 //add file to bucket
                 // console.log('name', file.name)
+                const thumbnailBuffer = await generateThumbnail(file.buffer)
+                
+                const thumbnailResponse = await fetch(`${bucketServer}/${thumbnailId}`, {
+                    method: 'PUT',
+                    body: thumbnailBuffer,
+                    headers: {
+                        'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET,
+                        'fileName': file.name,
+                        'contentType': "image/png"
+                    }
+                })
+                if(!thumbnailResponse.ok){
+                    throw new Error(`Failed to upload thumbnail, status: ${thumbnailResponse.status}`);
+                }
 
-
-                const response = await fetch(`${bucketServer}/${uniqueId}`, {
+                const fileResponse = await fetch(`${bucketServer}/${fileId}`, {
                     method: 'PUT',
                     body: file.buffer,
                     headers: {
                         'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET,
-                        'fileName': file.name
+                        'fileName': file.name,
+                        'contentType': "application/pdf"
                     }
-                })
-                if (!response.ok) {
-                    throw new Error(`Failed to upload file, status: ${response.status}`);
+                }) //note that this response doesnt throw errors, only sends responses with status codes, so the next if loop is crucial
+                if (!fileResponse.ok) {
+                    throw new Error(`Failed to upload file, status: ${fileResponse.status}`);
                 }
 
 
                 const writeData = {
-                    id: uniqueId,
+                    fileId: fileId,
+                    thumbnailId: thumbnailId,
                     title: fields.title,
                     author: fields.author,
                     description: fields.description,
@@ -112,17 +130,24 @@ const server = http.createServer(async (req, res) => {
                 return result
             })
             console.log('data entries to be fetched', result)
+            if(!result.length){
+                
+                res.end(JSON.stringify([]))
+                return
+            }
             //implement a task queue to fetch files from bucket for each item in result
             let completedFetches = 0
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.write('[');
             const getFilesFromBucket = async () => {
                 const taskQ = new TaskQueuePC(3)
                 for (let i = 0; i < result.length; i++) {
                     taskQ.runTask(async () => {
                         const index = i
                         try {
-                            
-                            console.log('fetching file', result[index].id)
-                            const bucketFile = await fetch(`${bucketServer}/${result[index].id}`, {
+
+                            console.log('fetching file', result[index].thumbnailId)
+                            const bucketFile = await fetch(`${bucketServer}/${result[index].thumbnailId}`, {
                                 method: 'GET',
                                 headers: {
                                     'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET,
@@ -131,28 +156,32 @@ const server = http.createServer(async (req, res) => {
                             })
                             console.log(bucketFile)
                             const fileArrayBuffer = await bucketFile.arrayBuffer()
-                            result[index].file = fileArrayBuffer
-                            
+                            const buffer = Buffer.from(fileArrayBuffer)
+                            result[index].thumbnail = buffer
+
                         } catch (err) {
                             console.log(err) //no throw because want succesful searches to go through regardless of failed fetches
-                        }finally{
+                        } finally {
                             return index
                         }
 
                     }).then((index) => {
                         console.log('file fetched', result[index].id, result[index].file)
                         completedFetches++
+                        const bookData = JSON.stringify(result[index]); //to change
+                        res.write((completedFetches > 1 ? ',' : '') + bookData + '\n');
+                        if (completedFetches === result.length) {
+                            res.write(']');
+                            res.end()
+                            console.log('Finished streaming all fetches!');
+                        }
                     })
                 }
             }
-            getFilesFromBucket()
+            await getFilesFromBucket()
 
-            while (completedFetches < result?.length) {
-                await new Promise((resolve) => setTimeout(resolve, 200))
-            }
-            console.log('finished all fetches!')
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(result))
+
+
         } catch (err) {
             res.writeHead(500, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "Error searching", error: err.message }));

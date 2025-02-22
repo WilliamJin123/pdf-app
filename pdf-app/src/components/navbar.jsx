@@ -30,7 +30,7 @@ export default function Navbar() {
 
     return (
         <Suspense fallback={<Loading />}>
-            <div className='flex-col h-15 relative w-[45%] float-right'>
+            <div className='flex-col h-15 relative w-[45%] float-right z-10'>
                 <AnimatePresence>
                     {expanded && (
                         <motion.div className="mr-5 float-right w-full relative text-responsive bg-black h-15 flex items-center justify-evenly text-white poppins-regular gap-[5%] rounded-b-3xl px-[2vw]"

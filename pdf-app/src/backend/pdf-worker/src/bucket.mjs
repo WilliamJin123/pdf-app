@@ -28,6 +28,7 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 		const key = url.pathname.slice(1);
+		
 		if (!authorizeRequest(request, env, key)) {
 			return new Response("Forbidden", { status: 403 });
 		}
@@ -36,7 +37,7 @@ export default {
 				const fileBuffer = await request.arrayBuffer();
 				await env.MY_BUCKET.put(key, fileBuffer, {
 					httpMetadata: {
-						contentType: "application/pdf",
+						contentType: request.headers.get("contentType"),
 					},
 
 				})

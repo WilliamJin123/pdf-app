@@ -26,7 +26,8 @@ export async function addFile(client, form, collection) {
     const col = db.collection(collection)
 
     const item = {
-        id: form.id,
+        thumbnailId: form.thumbnailId,
+        fileId: form.fileId,
         title: form.title,
         author: form.author,
         description: form.description,
