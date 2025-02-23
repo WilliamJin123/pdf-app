@@ -8,16 +8,24 @@
 
 
 @theme {
+  --dark-gray: #1f1f1f;
   --gray: #4B5267;
+  --gray-cream: #f7f5e9;
   --cream: #FFFDF0;
   --strong-cream: #fef5c5;
+  --dark-cream: #dedcce;
 }
-
+*{
+  transition: background-color 0.2s ;
+}
 body{
   display: flex;
   flex-direction: column;
-  background-color: var(--cream);
 }
+
+
+
+
 button{
   border-width: 1.5px;
   border-color: currentColor;
@@ -30,7 +38,7 @@ button:hover, a:hover{
 }
 button:hover, button:focus{
   box-shadow: 0 0 30px var(--strong-cream);
-  filter: brightness(1.1);
+  filter: brightness(1.15);
 }
 
 

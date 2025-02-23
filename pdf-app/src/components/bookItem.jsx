@@ -15,10 +15,10 @@ export default function BookItem({ book, setSelected, selected, index }) {
 
     return (
         <>
-            <div className="bg-[var(--cream)] w-full rounded-lg border border-1 border-gray-400  h-[20vw] flex flex-col justify-center items-center text-[0.95vw]"
+            <div className="w-full rounded-lg border-1 border-gray-400  h-[20vw] flex flex-col justify-center items-center text-[0.95vw]"
                 onClick={() => setSelected(index)}>
                 <div className=" h-[75%] w-full  flex justify-center items-center">
-                    <img src={imgUrl} className="object-contain w-[75%] rounded" />
+                    <img src={imgUrl} className="object-contain w-[75%] rounded-md " />
                 </div>
                 <div className="w-full h-[25%] text-black text-center ">
                     <div className="poppins-semibold mt-[0.5vw]">{title}</div>

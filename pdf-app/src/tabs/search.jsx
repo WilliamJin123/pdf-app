@@ -2,9 +2,11 @@ import BookItem from "../components/bookItem"
 import SearchBar from "../components/searchBar"
 import { useState, useRef, useEffect, } from "react"
 import SelectedItem from "../components/selectedItem"
-import { motion, AnimatePresence } from 'motion/react'
+import { AnimatePresence} from 'motion/react'
+import { useDarkContextWrapper } from "../components/context/backgroundDarkenContext"
 
 export default function Search() {
+    const {darkened, setDarkened} = useDarkContextWrapper()
     const [query, setQuery] = useState(JSON.parse(localStorage.getItem("searchQuery")) || {
         title: "",
         author: ""
@@ -60,6 +62,7 @@ export default function Search() {
         console.log(books)
     }, [books])
 
+    
     const submitSearch = async (e) => {
         fetchBooks()
     }
@@ -79,11 +82,14 @@ export default function Search() {
 
     }
 
-    useEffect(() => {
-        console.log("search", searching)
-        console.log('selected', selected)
-
-    }, [searching, selected])
+    const handleSelected = (value) => {
+        setSelected(value)
+        if(selected.length !== 0){
+            setDarkened(true)
+        }else{
+            setDarkened(false)
+        }
+    }
 
 
     return (
@@ -95,12 +101,12 @@ export default function Search() {
                 {searching ? (<div>Searching</div>) : (
                     !books.length ? (<div>No Matches</div>) :
                         books.map((book, index) => (
-                            <BookItem key={book.fileId} index={index} book={book} setSelected={setSelected} selected={selected} />
+                            <BookItem key={book.fileId} index={index} book={book} setSelected={handleSelected} selected={selected} />
                         )))}
 
             </div>
             <AnimatePresence>
-                {selected.length !== 0 && (<SelectedItem book={books[selected]} setSelected={setSelected}/>)}
+                {selected.length !== 0 && (<SelectedItem book={books[selected]} setSelected={handleSelected}/>)}
             </AnimatePresence>
             
         </div>

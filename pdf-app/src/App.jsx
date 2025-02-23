@@ -8,12 +8,13 @@ import Upload from "./tabs/upload"
 import Library from "./tabs/library"
 import Search from "./tabs/search"
 import Profile from "./tabs/profile"
-
+import { useDarkContextWrapper } from "./components/context/backgroundDarkenContext"
 
 export default function App() {
-
+  const {darkened} = useDarkContextWrapper()
   return (
-    <div className="w-full relative flex-col h-full ">
+  
+      <div className={`w-full relative flex-col h-[100vh] ${darkened? 'bg-[var(--cream)]' : 'bg-[var(--dark-cream)]'}`}>
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/search" element={<Search />} />
       </Routes>
     </div>
+    
   )
 }
 
