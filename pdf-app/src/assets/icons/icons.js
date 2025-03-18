@@ -13,6 +13,7 @@ import file from './filetypes/file.png'
 import x from './close.png'
 import checkmark from './checkmark.png'
 import search from './search.png'
+import arrow from './arrow.png'
 
 export default {
     uploadpng,
@@ -28,5 +29,6 @@ export default {
     file,
     x,
     checkmark,
-    search
+    search,
+    arrow
 }

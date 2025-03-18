@@ -63,7 +63,7 @@ const server = http.createServer(async (req, res) => {
                 //add file to bucket
                 // console.log('name', file.name)
                 const thumbnailBuffer = await generateThumbnail(file.buffer)
-                
+
                 const thumbnailResponse = await fetch(`${bucketServer}/${thumbnailId}`, {
                     method: 'PUT',
                     body: thumbnailBuffer,
@@ -73,7 +73,7 @@ const server = http.createServer(async (req, res) => {
                         'contentType': "image/png"
                     }
                 })
-                if(!thumbnailResponse.ok){
+                if (!thumbnailResponse.ok) {
                     throw new Error(`Failed to upload thumbnail, status: ${thumbnailResponse.status}`);
                 }
 
@@ -130,8 +130,8 @@ const server = http.createServer(async (req, res) => {
                 return result
             })
             console.log('data entries to be fetched', result)
-            if(!result.length){
-                
+            if (!result.length) {
+
                 res.end(JSON.stringify([]))
                 return
             }
@@ -182,6 +182,24 @@ const server = http.createServer(async (req, res) => {
 
 
 
+        } catch (err) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Error searching", error: err.message }));
+        }
+    } else if (req.method === 'GET' && req.url.includes('/read')) {
+        try {
+            const bookFile = await fetch(`${bucketServer}/${req.url.split('/')[2]}`, {
+                method: 'GET',
+                headers: {
+                    'X-Custom-Auth-Key': process.env.AUTH_KEY_SECRET
+                }
+            })
+            console.log('bookfile', bookFile)
+            const bookArrayBuffer = await bookFile.arrayBuffer()
+            const buffer = Buffer.from(bookArrayBuffer)
+            const bookData = JSON.stringify(buffer)
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(bookData)
         } catch (err) {
             res.writeHead(500, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ message: "Error searching", error: err.message }));

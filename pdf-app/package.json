@@ -14,10 +14,11 @@
     "@tailwindcss/vite": "^4.0.3",
     "motion": "^12.4.1",
     "pdf-lib": "^1.17.1",
-    "pdfjs-dist": "^4.10.38",
+    "pdfjs-dist": "^5.0.375",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-pdf": "^9.2.1",
     "react-router": "^7.1.5",
     "react-router-dom": "^7.1.5",
     "vite-plugin-svgr": "^4.3.0"

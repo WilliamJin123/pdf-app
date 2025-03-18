@@ -5,7 +5,9 @@ export default function SearchBar({styles, submitSearch, query, changeQuery, pla
     
     
     return (
-        <form className={`flex relative justify-center items-center poppins-light  h-15  cursor-pointer ${styles} `}>
+        <form onSubmit={(e) => {
+            e.preventDefault()
+            submitSearch()}} className={`flex relative justify-center items-center poppins-light  h-15  cursor-pointer ${styles} `}>
             <input type="text" placeholder={placeholder} className="w-full h-full bg-white  border border-black placeholder-gray-600 pl-7 text-2xl" 
             onChange={e => {changeQuery(e.target.value, name)
             }}

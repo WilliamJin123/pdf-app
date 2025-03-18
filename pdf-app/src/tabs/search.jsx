@@ -2,20 +2,28 @@ import BookItem from "../components/bookItem"
 import SearchBar from "../components/searchBar"
 import { useState, useRef, useEffect, } from "react"
 import SelectedItem from "../components/selectedItem"
-import { AnimatePresence} from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import { useDarkContextWrapper } from "../components/context/backgroundDarkenContext"
+import { useLocation, useSearchParams } from "react-router"
+
 
 export default function Search() {
-    const {darkened, setDarkened} = useDarkContextWrapper()
-    const [query, setQuery] = useState(JSON.parse(localStorage.getItem("searchQuery")) || {
-        title: "",
-        author: ""
+    const { darkened, setDarkened } = useDarkContextWrapper()
+    const [URLsearchParams, setURLsearchParams] = useSearchParams()
+    const [query, setQuery] = useState({
+        title: URLsearchParams.get("title") || "",
+        author: URLsearchParams.get("author") || ""
     })
     const [searching, setSearching] = useState(true)
     const [books, setBooks] = useState(JSON.parse(localStorage.getItem("books")) || [])
     const [error, setError] = useState()
-    const [selected, setSelected] = useState("")
+    const [selected, makeSelected] = useState(localStorage.getItem("selected") || -1)
+    function setSelected(value) {
+        makeSelected(value)
+        localStorage.setItem("selected", value)
+    }
     const abortControllerRef = useRef()
+
 
     const fetchBooks = async (offset = 0, limit = 10) => {
         abortControllerRef.current?.abort()
@@ -58,21 +66,23 @@ export default function Search() {
         }
     }, [])
 
+
     useEffect(() => {
         console.log(books)
-    }, [books])
+        console.log('selected', selected)
+        console.log(darkened)
 
-    
+    }, [books, selected])
+
+
     const submitSearch = async (e) => {
+        setURLsearchParams(query)
         fetchBooks()
     }
     const changeQuery = (value, name) => {
 
         setQuery(prev => {
-            localStorage.setItem("searchQuery", JSON.stringify({
-                ...query,
-                [name]: value
-            }))
+
             return {
                 ...prev,
                 [name]: value
@@ -84,9 +94,9 @@ export default function Search() {
 
     const handleSelected = (value) => {
         setSelected(value)
-        if(selected.length !== 0){
+        if (value !== -1) {
             setDarkened(true)
-        }else{
+        } else {
             setDarkened(false)
         }
     }
@@ -106,9 +116,9 @@ export default function Search() {
 
             </div>
             <AnimatePresence>
-                {selected.length !== 0 && (<SelectedItem book={books[selected]} setSelected={handleSelected}/>)}
+                {selected !== -1 && books[selected] && (<SelectedItem book={books[selected]} setSelected={handleSelected} />)}
             </AnimatePresence>
-            
+
         </div>
     )
 }
