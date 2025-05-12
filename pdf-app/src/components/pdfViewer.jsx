@@ -1,7 +1,11 @@
-import { pdfjs, Document, Page} from 'react-pdf'
+import { Document, Page} from 'react-pdf'
 import {useState, useEffect} from 'react'
+// import * as pdfjs from 'pdfjs-dist'
 // Create styles
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.mjs`;
+
+
+
+
 // Create Document Component
 export default function PdfViewer({file}) {
     const [numPages, setNumPages] = useState(null);

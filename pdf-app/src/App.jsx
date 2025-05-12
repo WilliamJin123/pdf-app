@@ -20,7 +20,6 @@ export default function App() {
   const location = useLocation()
   useEffect(() => {
     setDarkened(false)
-    console.log(location)
   }, [location])
   return (
 

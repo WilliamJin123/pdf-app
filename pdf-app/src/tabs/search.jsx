@@ -73,7 +73,7 @@ export default function Search() {
         console.log(darkened)
 
     }, [books, selected])
-
+    useEffect(() => {console.log('query', query)}, [query])
 
     const submitSearch = async (e) => {
         setURLsearchParams(query)

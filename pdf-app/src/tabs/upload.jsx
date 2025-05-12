@@ -122,7 +122,7 @@ export default function Upload() {
         <div className="w-full flex justify-center">
             <div className="w-[50vw]  bg-white shadow-2xl rounded-2xl flex-col items-center py-7 mt-9">
                 <form onSubmit={handleSubmit}>
-                    <div className="poppins-medium text-xl mb-7 ml-[2%]">Upload Video</div>
+                    <div className="poppins-medium text-xl mb-7 ml-[2%]">Upload Book</div>
 
                     <div className="w-[94%] mx-[3%] poppins-regular mb-5">
                         <label htmlFor="title" className="text-sm">Book Title:</label>
